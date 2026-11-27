@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+growth.db
+server.log
+.venv/
+strategy/*.png
+.env

@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CampusFest Growth Center</title>
+<style>
+:root{--navy:#0a1f44;--blue:#1b4fa0;--gold:#c8a24a;--bg:#f6f4ef;--card:#fff;--line:#e3e6ee;--ink:#14213d;--mut:#5a647c;--good:#1f8f5f;--bad:#c0392b;--warn:#d98e04}
+*{box-sizing:border-box}body{margin:0;font:14px/1.45 "Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:var(--navy);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:18px;position:sticky;top:0;z-index:5}
+header h1{font:700 18px Georgia,serif;margin:0}header .sub{color:#9fb4d8;font-size:12px}
+nav{display:flex;gap:4px;margin-left:12px}nav button{background:none;border:0;color:#c9d6ee;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px}
+nav button.on{background:rgba(255,255,255,.14);color:#fff}
+.asof{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:12px}.asof input{padding:5px 8px;border-radius:6px;border:0}
+.asof button{background:var(--gold);border:0;border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:700}
+main{padding:18px 20px;max-width:1500px;margin:0 auto;margin-right:380px}
+.grid{display:grid;gap:14px}.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card h3{margin:0 0 8px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue)}
+.kpi .v{font:700 28px Georgia,serif;color:var(--navy)}.kpi .s{color:var(--mut);font-size:12px}
+.bar{height:8px;background:#e8ecf5;border-radius:6px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:13px}th{background:var(--navy);color:#fff;text-align:left;padding:7px 8px;font-size:11px;letter-spacing:.8px;text-transform:uppercase}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}td.n,th.n{text-align:right}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.scale{background:#d9f2e6;color:#116b45}.reduce{background:#f8d9d5;color:#9b2c20}.fix{background:#fdecc8;color:#8a5a00}.hold{background:#e8ecf5;color:#3b4a6b}.info,.stopped{background:#eee;color:#555}
+.sev-high{border-left:5px solid var(--bad)}.sev-medium{border-left:5px solid var(--warn)}.sev-opportunity{border-left:5px solid var(--good)}
+button.b{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px}button.b.alt{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+button.b.red{background:var(--bad)}input,select,textarea{font:inherit;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mut{color:var(--mut)}.small{font-size:12px}
+.hide{display:none}.over{color:var(--bad);font-weight:700}
+#chat{position:fixed;right:0;top:52px;bottom:0;width:370px;background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column}
+#chat .hd{padding:10px 14px;background:#fdf6e3;border-bottom:1px solid var(--line)}#chat .hd b{font-family:Georgia,serif}
+#msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.m{max-width:92%;padding:8px 11px;border-radius:12px;white-space:pre-wrap}.m.u{align-self:flex-end;background:var(--blue);color:#fff}.m.a{align-self:flex-start;background:#f0f3fa}
+.m details{font-size:11px;color:var(--mut);margin-top:4px}.prop{border:1px dashed var(--gold);background:#fff8e6;border-radius:10px;padding:8px;margin-top:6px}
+#chat form{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}#chat input{flex:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 10px 8px}.chips button{background:#eef2fb;border:0;border-radius:999px;padding:4px 10px;font-size:11px;cursor:pointer;color:var(--blue)}
+svg text{font-family:"Segoe UI",Arial}
+@media(max-width:1100px){main{margin-right:0}#chat{position:static;width:auto;height:480px}.g4,.g3,.g2{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header><div><h1>CampusFest Growth Center</h1><div class="sub" id="evline"></div></div>
+<nav id="nav"></nav>
+<div class="asof">As of <input type="date" id="asof"><button id="latest">Latest</button><button id="t14">T-14</button></div></header>
+<main id="main"></main>
+<aside id="chat"><div class="hd"><b>Growth Analyst</b> <span class="small mut" id="engine"></span><div class="small mut">Answers use live data for the selected as-of date.</div></div>
+<div id="msgs"></div>
+<div class="chips" id="chips"></div>
+<form id="cf"><input id="ci" placeholder="Ask about the data, risks, actions..." autocomplete="off"><button class="b">Send</button></form></aside>
+<script>
+const $=s=>document.querySelector(s);const fmt=n=>n==null?'–':Number(n).toLocaleString('en-IN');const inr=n=>n==null?'–':'₹'+Number(n).toLocaleString('en-IN',{maximumFractionDigits:0});
+const pct=x=>x==null?'–':(x*100).toFixed(1)+'%';
+let META,S,TASKS=[],tab='overview',hist=[];
+const api=async(u,o={})=>{const r=await fetch(u,{headers:{'Content-Type':'application/json'},...o,body:o.body?JSON.stringify(o.body):undefined});const j=await r.json();if(!r.ok)throw new Error(j.error||r.statusText);return j};
+const asof=()=>$('#asof').value;
+const TABS=[['overview','Overview'],['campaigns','Campaigns'],['planner','Planner'],['tasks','Tasks'],['data','Data entry']];
+function nav(){ $('#nav').innerHTML=TABS.map(([k,l])=>`<button class="${k==tab?'on':''}" onclick="go('${k}')">${l}</button>`).join('')}
+window.go=k=>{tab=k;nav();render()};
+async function load(){S=await api('/api/state?as_of='+asof());TASKS=(await api('/api/tasks?as_of='+asof())).tasks;render()}
+function bar(p,col){return `<div class="bar"><i style="width:${Math.min(100,(p||0)*100)}%;${col?'background:'+col:''}"></i></div>`}
+function kpi(l,v,s,p){return `<div class="card kpi"><h3>${l}</h3><div class="v">${v}</div><div class="s">${s}</div>${p!=null?bar(p):''}</div>`}
+function line(series,keys,cols,w=560,h=210){const n=series.length;const mx=Math.max(...keys.map(k=>Math.max(...series.map(r=>r[k]))),1);
+ const X=i=>40+i*(w-60)/(n-1||1),Y=v=>h-24-(v/mx)*(h-40);let o=`<svg viewBox="0 0 ${w} ${h}" width="100%">`;
+ for(let g=0;g<=4;g++){const y=Y(mx*g/4);o+=`<line x1="40" x2="${w-20}" y1="${y}" y2="${y}" stroke="#eceff6"/><text x="36" y="${y+4}" font-size="10" text-anchor="end" fill="#5a647c">${Math.round(mx*g/4).toLocaleString('en-IN')}</text>`}
+ keys.forEach((k,j)=>{o+=`<polyline fill="none" stroke="${cols[j]}" stroke-width="2.2" points="${series.map((r,i)=>X(i)+','+Y(r[k])).join(' ')}"/>`});
+ [0,Math.floor(n/2),n-1].forEach(i=>{o+=`<text x="${X(i)}" y="${h-6}" font-size="10" text-anchor="middle" fill="#5a647c">${series[i].date.slice(5)}</text>`});
+ o+=keys.map((k,j)=>`<text x="${50+j*110}" y="12" font-size="11" fill="${cols[j]}">● ${k}</text>`).join('');return o+'</svg>'}
+function funnelSvg(f){const items=f.identified;const mx=items[0][1]||1;return items.map(([l,v],i)=>{const prev=i?items[i-1][1]:null;
+ return `<div style="margin:6px 0"><div class="row small"><b style="width:140px">${l}</b><span>${fmt(v)}</span><span class="mut">${prev?'('+pct(v/prev)+' of previous)':''}</span></div>${bar(v/mx,['#1b4fa0','#3a6fc4','#6f94d6','#c8a24a'][i])}</div>`}).join('')}
+function overview(){const k=S.kpis,t=k.target||{},p=S.projection;
+ let h=`<div class="grid g4">${kpi('Identified (external)',fmt(k.identified),`goal ${fmt(t.identified)} · ${pct(k.pct_identified)}`,k.pct_identified)}
+ ${kpi('Registered',fmt(k.registered),`goal ${fmt(t.registered)} · ${pct(k.pct_registered)}`,k.pct_registered)}
+ ${kpi('Verified attendees',k.pre_event?'not yet':fmt(k.attended),k.pre_event?'event starts '+k.event.starts:`goal ${fmt(t.attended)} · ${pct(k.pct_attended)}`,k.pre_event?0:k.pct_attended)}
+ ${kpi('Spend',inr(k.spend),`limit ${inr(t.budget)} · ${pct(k.budget_used_pct)}${k.cpa?' · CPA '+inr(k.cpa):''}`,k.budget_used_pct)}</div>
+ <p class="small mut">Target in force: <b>${t.version||'–'}</b> (from ${t.effective_at||'–'}). Plan budgets total ${inr(k.plan_budget)} ${k.budget_headroom<0?`<span class="over">· ${inr(-k.budget_headroom)} over the limit</span>`:`· headroom ${inr(k.budget_headroom)}`}.</p>
+ <div class="grid g2" style="margin-top:6px"><div class="card"><h3>Cumulative growth</h3>${line(S.timeline,['identified','registered','attended'],['#1b4fa0','#c8a24a','#1f8f5f'])}</div>
+ <div class="card"><h3>Identified funnel</h3>${funnelSvg(S.funnel)}<h3 style="margin-top:12px">Anonymous traffic (not unique people)</h3><div class="row small">${S.funnel.anonymous.map(([l,v])=>`<span><b>${fmt(v)}</b> ${l}</span>`).join(' → ')}</div>
+ <div class="small mut" style="margin-top:6px">Reg. rate ${pct(k.reg_rate)} · confirmed ${pct(k.confirm_rate)} of registered · show-up ${pct(k.show_rate)} · cancelled ${fmt(k.cancelled)} · waitlisted ${fmt(k.waitlisted)}</div></div></div>
+ <div class="card" style="margin-top:14px"><h3>${p.mode=='actual'?'Outcome':'Projected outcome'}</h3>${p.mode=='actual'?`<b>${fmt(p.attended)}</b> verified attendees from ${fmt(p.registered)} registrants. ${p.note}`:
+  `<b>${fmt(p.registered)}</b> registrants and about <b>${fmt(p.attended)}</b> attendees by the event (${p.days_to_event} days; ${p.pace_per_day}/day pace; ${pct(p.assumed_show_rate)} assumed show-up) → gap to goal <b>${fmt(p.gap_to_attendee_goal)}</b>.<div class="small mut">${p.note}</div>`}</div>
+ <h3 style="margin:18px 0 8px;font-size:12px;letter-spacing:1.5px;color:var(--blue)">INSIGHTS AND RECOMMENDED ACTIONS</h3><div class="grid">${S.insights.map((i,ix)=>`<div class="card sev-${i.severity}"><div class="row"><b style="flex:1">${i.title}</b><span class="tag hold">${i.severity}</span></div><div class="small mut">${i.evidence}</div><div>${i.recommendation}</div>
+  ${i.task?`<div class="row" style="margin-top:6px"><button class="b" onclick="taskFromInsight(${ix})">Create task</button>${i.campaign_id?`<button class="b alt" onclick="decide('${i.campaign_id}','${i.id.startsWith('reduce')?'stop':i.id.startsWith('scale')?'scale':'hold'}','${i.title.replace(/'/g,'')}')">Log decision</button>`:''}</div>`:''}</div>`).join('')||'<div class="card">No flags.</div>'}</div>`;return h}
+function campaigns(){const rows=S.campaigns;return `<div class="card" style="overflow:auto"><h3>Campaign performance (as of ${asof()})</h3><table><tr><th>Campaign</th><th class="n">Identified</th><th class="n">Registered</th><th class="n">Reg %</th><th class="n">Attended</th><th class="n">Show %</th><th class="n">Spend</th><th class="n">CPR</th><th class="n">CPA</th><th class="n">Plan target</th><th class="n">Plan budget</th><th>Verdict</th><th>Tasks</th></tr>
+ ${rows.map(r=>`<tr><td><b>${r.name}</b><div class="small mut">${r.owner||''} ${r.plan_status&&r.plan_status!='active'?'· '+r.plan_status:''}</div></td><td class="n">${fmt(r.identified)}</td><td class="n">${fmt(r.registered)}</td><td class="n">${pct(r.reg_rate)}</td><td class="n">${r.show_rate==null&&S.kpis.pre_event?'–':fmt(r.attended)}</td><td class="n">${pct(r.show_rate)}</td><td class="n">${inr(r.spend)}</td><td class="n">${inr(r.cpr)}</td><td class="n">${inr(r.cpa)}</td>
+ <td class="n">${r.plan_target==null?'–':`<input type="number" value="${r.plan_target}" style="width:70px" onchange="plan('${r.campaign_id}',{attendee_target:this.value})"><div class="small mut">${pct(r.target_pct)}</div>`}</td>
+ <td class="n">${r.plan_budget==null?'–':`<input type="number" value="${r.plan_budget}" style="width:80px" onchange="plan('${r.campaign_id}',{budget_inr:this.value})"><div class="small ${r.budget_used_pct>1?'over':'mut'}">${pct(r.budget_used_pct)} used</div>`}</td>
+ <td><span class="tag ${r.verdict}">${r.verdict}</span><div class="small mut">${(r.flags||[]).join(', ')}</div></td><td class="small">${r.tasks_open} open<br>${r.tasks_overdue?`<span class="over">${r.tasks_overdue} overdue</span>`:''}${r.tasks_blocked?` ${r.tasks_blocked} blocked`:''}</td></tr>`).join('')}</table>
+ <p class="small mut">CPR = spend / registrants, CPA = spend / verified attendees. Verdicts: thresholds are show-up &lt; 60%, registration &lt; 70%, CPA &gt; 1.5× or &lt; 0.8× blended. Editing a plan cell updates every metric.</p></div>`}
+let SC=null;async function planner(){const b=await api('/api/model/baseline');SC=SC||{budgets:{...b.presets['Base'].budgets},show:b.presets['Base'].show_uplift,reg:b.presets['Base'].reg_uplift};
+ const r=await api('/api/model/run',{method:'POST',body:{budgets:SC.budgets,show_uplift:SC.show,reg_uplift:SC.reg}});const t=r.total;
+ $('#main').innerHTML=`<div class="card"><h3>Next-edition scenario planner</h3><div class="row">${Object.keys(b.presets).map(n=>`<button class="b alt" onclick="preset('${n}')">${n}</button>`).join('')}<button class="b" onclick="saveScn()">Save scenario</button></div>
+ <p class="small mut">Calibrated on the 2025 actuals in the data. Elasticity and channel caps are assumptions; the data has one spend level per campaign.</p>
+ <table><tr><th>Campaign</th><th class="n">2025 spend</th><th class="n">Budget</th><th class="n">Attendees</th><th class="n">CPA</th></tr>${r.campaigns.map(c=>`<tr><td>${c.name}${c.capped?' <span class="tag fix">capacity cap</span>':''}</td><td class="n">${inr(b.baseline[c.campaign_id].S0)}</td><td class="n"><input type="number" step="1000" style="width:90px" value="${SC.budgets[c.campaign_id]}" onchange="SC.budgets['${c.campaign_id}']=+this.value;planner()"></td><td class="n">${fmt(c.attended)}</td><td class="n">${inr(c.cpa)}</td></tr>`).join('')}
+ <tr><td><b>Walk-ins (held at 2025)</b></td><td></td><td></td><td class="n">${fmt(r.walkins)}</td><td></td></tr></table>
+ <div class="row" style="margin-top:10px">Show-up uplift (pp) <input type="number" step="0.01" style="width:70px" value="${SC.show}" onchange="SC.show=+this.value;planner()"> Registration uplift (pp) <input type="number" step="0.01" style="width:70px" value="${SC.reg}" onchange="SC.reg=+this.value;planner()"></div>
+ <div class="grid g4" style="margin-top:12px">${kpi('Projected attendees',fmt(t.attended),'vs 2,050 in 2025 ('+((t.attended/2050-1)*100).toFixed(0)+'%)')}${kpi('Spend',inr(t.spend),'cap '+inr(300000))}${kpi('Blended CPA',inr(t.cpa),'2025: ₹134')}${kpi('Registered',fmt(t.registered),'identified '+fmt(t.identified))}</div></div>`}
+window.preset=n=>{api('/api/model/baseline').then(b=>{const p=b.presets[n];SC={budgets:{...p.budgets},show:p.show_uplift,reg:p.reg_uplift};planner()})};
+window.saveScn=async()=>{const name=prompt('Scenario name?');if(!name)return;const r=await api('/api/model/run',{method:'POST',body:{budgets:SC.budgets,show_uplift:SC.show,reg_uplift:SC.reg}});await api('/api/scenarios',{method:'POST',body:{name,config:SC,result:r.total}});alert('Saved')};
+function tasks(){const own=Object.fromEntries(META.owners.map(o=>[o.owner_id,o.owner_name]));const camp=Object.fromEntries(META.campaigns.map(c=>[c.campaign_id,c.campaign_name]));
+ return `<div class="card"><h3>Add task</h3><div class="row"><input id="tt" placeholder="Task title" style="flex:1;min-width:240px"><select id="tc"><option value="">No campaign</option>${META.campaigns.map(c=>`<option value="${c.campaign_id}">${c.campaign_name}</option>`).join('')}</select>
+ <select id="to">${META.owners.map(o=>`<option value="${o.owner_id}">${o.owner_name}</option>`).join('')}</select><input type="date" id="td"><select id="tp"><option>medium</option><option>high</option><option>low</option></select><button class="b" onclick="addTask()">Add</button></div></div>
+ <div class="card" style="margin-top:14px;overflow:auto"><h3>Task tracker (overdue is measured against ${asof()})</h3><table><tr><th>#</th><th>Task</th><th>Campaign</th><th>Owner</th><th>Due</th><th>Priority</th><th>Status</th><th></th></tr>
+ ${TASKS.map(t=>`<tr><td>${t.id}</td><td>${t.title}${t.source=='assistant'?' <span class="tag hold">from analyst</span>':''}</td><td>${camp[t.campaign_id]||'–'}</td><td>${own[t.owner_id]||'–'}</td><td class="${t.overdue?'over':''}">${t.due_date||'–'}${t.overdue?' (overdue)':''}</td><td>${t.priority}</td>
+ <td><select onchange="upd(${t.id},{status:this.value})">${META.statuses.map(s=>`<option ${s==t.status?'selected':''}>${s}</option>`).join('')}</select></td><td><button class="b red" onclick="delTask(${t.id})">×</button></td></tr>`).join('')}</table></div>
+ <div class="card" style="margin-top:14px"><h3>Decision log</h3><div id="dec" class="small"></div></div>`}
+function data(){return `<div class="grid g2"><div class="card"><h3>Add / replace a day of marketing activity</h3><div class="grid" style="gap:8px"><select id="dc">${META.campaigns.map(c=>`<option value="${c.campaign_id}">${c.campaign_name}</option>`).join('')}</select><input type="date" id="dd" value="${asof()}">
+ ${['impressions','clicks','reported_reach','landing_page_sessions','registration_starts','marketing_spend_inr'].map(k=>`<input type="number" id="f_${k}" placeholder="${k}" value="0">`).join('')}<button class="b" onclick="addDaily()">Save</button></div><p class="small mut">Spend and counts flow straight into cost and funnel metrics.</p></div>
+ <div class="card"><h3>Quick-add an external person</h3><div class="grid" style="gap:8px"><input id="pn" placeholder="Person name"><select id="pc">${META.campaigns.map(c=>`<option value="${c.campaign_id}">${c.campaign_name}</option>`).join('')}</select>
+ <label><input type="checkbox" id="pr" checked> Registered</label><select id="ps"><option>confirmed</option><option>interested</option><option>cancelled</option><option>waitlisted</option></select><label><input type="checkbox" id="pa"> Attended (verified check-in)</label><button class="b" onclick="addPerson()">Add</button></div>
+ <hr><button class="b red" onclick="resetDb()">Reset all data to the original dataset</button></div></div>`}
+function render(){ if(!S)return;$('#evline').textContent=`${META.event.name} · ${META.event.starts} to ${META.event.ends} · snapshot ${asof()}`;
+ if(tab=='planner')return planner(); $('#main').innerHTML={overview,campaigns,tasks,data}[tab]();if(tab=='tasks')loadDec()}
+async function loadDec(){const d=(await api('/api/decisions')).decisions;$('#dec').innerHTML=d.length?d.map(x=>`<div>${x.created_at} · <b>${x.decision}</b> ${x.campaign_id||''} — ${x.rationale||''}</div>`).join(''):'No decisions logged yet.'}
+window.plan=async(c,b)=>{try{await api('/api/plan/'+c,{method:'PUT',body:b});load()}catch(e){alert(e.message)}};
+window.upd=async(id,b)=>{await api('/api/tasks/'+id,{method:'PUT',body:b});load()};
+window.delTask=async id=>{if(confirm('Delete task?')){await api('/api/tasks/'+id,{method:'DELETE'});load()}};
+window.addTask=async()=>{try{await api('/api/tasks',{method:'POST',body:{title:$('#tt').value,campaign_id:$('#tc').value,owner_id:$('#to').value,due_date:$('#td').value,priority:$('#tp').value}});load()}catch(e){alert(e.message)}};
+window.taskFromInsight=async ix=>{const i=S.insights[ix];const due=prompt('Due date (YYYY-MM-DD)?',addDays(asof(),7));if(due===null)return;await api('/api/tasks',{method:'POST',body:{...i.task,due_date:due,notes:i.evidence,source:'insight'}});load();go('tasks')};
+window.decide=async(c,d,t)=>{await api('/api/decisions',{method:'POST',body:{campaign_id:c,decision:d,rationale:t,as_of:asof()}});load();go('tasks')};
+window.addDaily=async()=>{const b={campaign_id:$('#dc').value,activity_date:$('#dd').value};['impressions','clicks','reported_reach','landing_page_sessions','registration_starts','marketing_spend_inr'].forEach(k=>b[k]=$('#f_'+k).value);try{await api('/api/daily',{method:'POST',body:b});alert('Saved');load()}catch(e){alert(e.message)}};
+window.addPerson=async()=>{try{await api('/api/attendees',{method:'POST',body:{person_name:$('#pn').value,campaign_id:$('#pc').value,registered:$('#pr').checked,status:$('#ps').value,attended:$('#pa').checked}});alert('Added');load()}catch(e){alert(e.message)}};
+window.resetDb=async()=>{if(confirm('Rebuild everything from the original workbook?')){await api('/api/reset',{method:'POST'});load()}};
+function addDays(d,n){const x=new Date(d+'T00:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)}
+// ---------------- chat
+function addMsg(cls,text,extra=''){const d=document.createElement('div');d.className='m '+cls;d.innerHTML=text.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/</g,m=>m)+extra;$('#msgs').appendChild(d);$('#msgs').scrollTop=1e9;return d}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+async function ask(q){addMsg('u',esc(q));hist.push({role:'user',text:q});const w=addMsg('a','…');
+ try{const r=await api('/api/chat',{method:'POST',body:{message:q,as_of:asof(),history:hist.slice(0,-1)}});hist.push({role:'assistant',text:r.reply});w.remove();
+  let ex=`<details><summary>Evidence (${r.trace.length} tool call${r.trace.length==1?'':'s'}) · ${r.engine}</summary>${r.trace.map(t=>`<div><b>${t.tool}</b> ${esc(JSON.stringify(t.args))}<br>${esc(t.result_preview||'')}</div>`).join('')}</details>`;
+  const d=addMsg('a',esc(r.reply),ex);
+  (r.proposals||[]).forEach(p=>{const box=document.createElement('div');box.className='prop';box.innerHTML=`<b>Proposed task</b><br>${esc(p.title)}<div class="small mut">campaign ${p.campaign_id||'–'} · owner ${p.owner_id||'–'} · due ${p.due_date||'set on confirm'} · ${p.priority}</div><div class="row"><input type="date" value="${p.due_date||addDays(asof(),7)}" class="due"><button class="b">Confirm &amp; add</button><button class="b alt">Dismiss</button></div>`;
+   box.querySelector('.b').onclick=async()=>{await api('/api/tasks',{method:'POST',body:{...p,due_date:box.querySelector('.due').value}});box.innerHTML='✓ Added to the task tracker';load()};box.querySelector('.alt').onclick=()=>box.remove();d.appendChild(box)})}
+ catch(e){w.textContent='Error: '+e.message}}
+$('#cf').onsubmit=e=>{e.preventDefault();const q=$('#ci').value.trim();if(!q)return;$('#ci').value='';ask(q)};
+(async function init(){META=await api('/api/meta');$('#engine').textContent='· '+META.chat_engine;$('#asof').min=META.event.history_start;$('#asof').max=META.event.history_end;$('#asof').value=META.event.history_end;
+ $('#asof').onchange=load;$('#latest').onclick=()=>{$('#asof').value=META.event.history_end;load()};$('#t14').onclick=()=>{$('#asof').value='2025-03-29';load()};
+ ['How are we doing against target?','Which campaign has the worst cost per attendee?','Where is the biggest bottleneck?','What should we scale or stop?','Which tasks are overdue?'].forEach(q=>{const b=document.createElement('button');b.textContent=q;b.onclick=()=>ask(q);$('#chips').appendChild(b)});
+ addMsg('a','Hi, I answer from the live campaign data. Ask for numbers, diagnosis, or actions. I can draft tasks, and nothing is saved until you confirm.');nav();await load()})();
+</script></body></html>
